@@ -60,7 +60,7 @@ function generateEmail(firstName: string, lastName: string): string {
 
 function generateAddress(): Address {
   return {
-    street: `${randomInt(1, 9999)} ${randomElement(STREETS)}`,
+    street: `${String(randomInt(1, 9999))} ${randomElement(STREETS)}`,
     city: randomElement(CITIES),
     country: randomElement(COUNTRIES),
     postalCode: String(randomInt(10000, 99999)),

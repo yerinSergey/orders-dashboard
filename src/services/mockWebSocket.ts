@@ -85,7 +85,9 @@ export class MockWebSocket {
 
   private setStatus(status: ConnectionStatus): void {
     this.status = status;
-    this.statusChangeHandlers.forEach((handler) => handler(status));
+    this.statusChangeHandlers.forEach((handler) => {
+      handler(status);
+    });
   }
 
   private cleanup(): void {
@@ -130,7 +132,9 @@ export class MockWebSocket {
   private emitMessage(): void {
     const message = this.generateMessage();
     if (message) {
-      this.messageHandlers.forEach((handler) => handler(message));
+      this.messageHandlers.forEach((handler) => {
+        handler(message);
+      });
     }
   }
 
