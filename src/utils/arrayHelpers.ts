@@ -21,11 +21,14 @@ export function range(length: number): number[] {
     throw new Error('Range length must be non-negative');
   }
 
-  if (!arrayCache.has(length)) {
-    arrayCache.set(length, Array.from({ length }, (_, i) => i));
+  const cached = arrayCache.get(length);
+  if (cached) {
+    return cached;
   }
 
-  return arrayCache.get(length)!;
+  const result = Array.from({ length }, (_, i) => i);
+  arrayCache.set(length, result);
+  return result;
 }
 
 /**
