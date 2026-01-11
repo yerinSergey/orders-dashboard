@@ -1,4 +1,5 @@
-import { memo, useCallback, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
@@ -12,7 +13,7 @@ interface SearchInputProps {
   debounceMs?: number;
 }
 
-export const SearchInput = memo(function SearchInput({
+export const  SearchInput = ({
   value,
   onChange,
   placeholder = 'Search by customer name or order ID...',
@@ -25,27 +26,22 @@ export const SearchInput = memo(function SearchInput({
     setLocalValue(value);
   }, [value]);
 
-  // Debounce the onChange callback
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localValue !== value) {
-        onChange(localValue);
-      }
-    }, debounceMs);
+  // Debounced onChange callback
+  const debouncedOnChange = useDebouncedCallback((newValue: string) => {
+    onChange(newValue);
+  }, debounceMs);
 
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [localValue, value, onChange, debounceMs]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    debouncedOnChange(newValue);
+  };
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalValue(e.target.value);
-  }, []);
-
-  const handleClear = useCallback(() => {
+  const handleClear = () => {
     setLocalValue('');
-    onChange('');
-  }, [onChange]);
+    debouncedOnChange.cancel(); // Cancel pending debounced calls
+    onChange(''); // Immediate update on clear
+  };
 
   return (
     <TextField
@@ -79,4 +75,4 @@ export const SearchInput = memo(function SearchInput({
       sx={{ maxWidth: 400 }}
     />
   );
-});
+}
