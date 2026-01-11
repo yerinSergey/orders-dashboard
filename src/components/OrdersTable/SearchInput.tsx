@@ -13,7 +13,7 @@ interface SearchInputProps {
   debounceMs?: number;
 }
 
-export const  SearchInput = ({
+export const SearchInput = ({
   value,
   onChange,
   placeholder = 'Search by customer name or order ID...',
