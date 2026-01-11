@@ -65,7 +65,6 @@ export function OrdersTable({
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
-    enabled: useVirtualization,
   });
 
   const handlePageChange = useCallback(
