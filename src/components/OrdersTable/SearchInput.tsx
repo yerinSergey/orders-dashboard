@@ -18,29 +18,27 @@ export const SearchInput = ({
   onChange,
   placeholder = 'Search by customer name or order ID...',
   debounceMs = 300,
-}: SearchInputProps) {
+}: SearchInputProps) => {
   const [localValue, setLocalValue] = useState(value);
 
-  // Sync local value when external value changes
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
 
-  // Debounced onChange callback
   const debouncedOnChange = useDebouncedCallback((newValue: string) => {
     onChange(newValue);
   }, debounceMs);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newValue = e.target.value;
     setLocalValue(newValue);
     debouncedOnChange(newValue);
   };
 
-  const handleClear = () => {
+  const handleClear = (): void => {
     setLocalValue('');
-    debouncedOnChange.cancel(); // Cancel pending debounced calls
-    onChange(''); // Immediate update on clear
+    debouncedOnChange.cancel();
+    onChange('');
   };
 
   return (

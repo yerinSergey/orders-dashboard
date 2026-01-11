@@ -16,6 +16,7 @@ import { useThemeContext } from '@/theme/ThemeContext';
 import { OrdersTable } from '@/components/OrdersTable';
 import { OrderDetailsModal } from '@/components/OrderDetailsModal';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function App() {
   const { isDark, toggleMode } = useThemeContext();
@@ -154,32 +155,36 @@ function App() {
       </Box>
 
       {/* Orders Table */}
-      <OrdersTable
-        orders={paginatedOrders}
-        totalCount={totalCount}
-        page={tableState.page}
-        pageSize={tableState.pageSize}
-        sortColumn={tableState.sortColumn}
-        sortDirection={tableState.sortDirection}
-        statusFilter={tableState.statusFilter}
-        searchQuery={tableState.searchQuery}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
-        onSortChange={setSort}
-        onStatusFilterChange={setStatusFilter}
-        onSearchChange={setSearchQuery}
-        onOrderClick={handleOrderClick}
-        isLoading={isLoading}
-      />
+      <ErrorBoundary>
+        <OrdersTable
+          orders={paginatedOrders}
+          totalCount={totalCount}
+          page={tableState.page}
+          pageSize={tableState.pageSize}
+          sortColumn={tableState.sortColumn}
+          sortDirection={tableState.sortDirection}
+          statusFilter={tableState.statusFilter}
+          searchQuery={tableState.searchQuery}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          onSortChange={setSort}
+          onStatusFilterChange={setStatusFilter}
+          onSearchChange={setSearchQuery}
+          onOrderClick={handleOrderClick}
+          isLoading={isLoading}
+        />
+      </ErrorBoundary>
 
       {/* Order Details Modal */}
-      <OrderDetailsModal
-        order={selectedOrder}
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveStatus}
-        isSaving={updateStatusMutation.isPending}
-      />
+      <ErrorBoundary>
+        <OrderDetailsModal
+          order={selectedOrder}
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          onSave={handleSaveStatus}
+          isSaving={updateStatusMutation.isPending}
+        />
+      </ErrorBoundary>
     </Container>
   );
 }
