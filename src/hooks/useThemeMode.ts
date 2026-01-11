@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { THEME_MODE, type ThemeMode } from '@/theme/theme';
+import type { ThemeMode } from '@/theme/theme';
 
 const THEME_STORAGE_KEY = 'orders-dashboard-theme';
 
@@ -7,17 +7,17 @@ function getInitialTheme(): ThemeMode {
   // Check localStorage first
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === THEME_MODE.LIGHT || stored === THEME_MODE.DARK) {
+    if (stored === 'light' || stored === 'dark') {
       return stored;
     }
 
     // Check system preference
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return THEME_MODE.DARK;
+      return 'dark';
     }
   }
 
-  return THEME_MODE.LIGHT;
+  return 'light';
 }
 
 export function useThemeMode() {
@@ -36,7 +36,7 @@ export function useThemeMode() {
       // Only update if user hasn't explicitly set a preference
       const stored = localStorage.getItem(THEME_STORAGE_KEY);
       if (!stored) {
-        setMode(e.matches ? THEME_MODE.DARK : THEME_MODE.LIGHT);
+        setMode(e.matches ? 'dark' : 'light');
       }
     };
 
@@ -47,7 +47,7 @@ export function useThemeMode() {
   }, []);
 
   const toggleMode = useCallback(() => {
-    setMode((prev) => (prev === THEME_MODE.LIGHT ? THEME_MODE.DARK : THEME_MODE.LIGHT));
+    setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
   }, []);
 
   const setThemeMode = useCallback((newMode: ThemeMode) => {
@@ -58,6 +58,6 @@ export function useThemeMode() {
     mode,
     toggleMode,
     setThemeMode,
-    isDark: mode === THEME_MODE.DARK,
+    isDark: mode === 'dark',
   };
 }

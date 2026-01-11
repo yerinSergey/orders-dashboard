@@ -2,14 +2,13 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import type { ConnectionStatus, WebSocketMessage, Order } from '@/features/orders/types';
 import { MockWebSocket } from '@/services/mockWebSocket';
 
-interface UseOrdersWebSocketOptions {
-  onMessage: (message: WebSocketMessage) => void;
+interface UseWebSocketOptions {
   autoConnect?: boolean;
   enableRandomDisconnect?: boolean;
   randomDisconnectProbability?: number;
 }
 
-interface UseOrdersWebSocketReturn {
+interface UseWebSocketReturn {
   status: ConnectionStatus;
   connect: () => void;
   disconnect: () => void;
@@ -17,11 +16,12 @@ interface UseOrdersWebSocketReturn {
   reconnectAttempts: number;
 }
 
-export function useOrdersWebSocket(
+export function useWebSocket(
   initialOrders: Order[],
-  options: UseOrdersWebSocketOptions
-): UseOrdersWebSocketReturn {
-  const { onMessage, autoConnect = true, enableRandomDisconnect = false, randomDisconnectProbability = 0.05 } = options;
+  onMessage: (message: WebSocketMessage) => void,
+  options: UseWebSocketOptions = {}
+): UseWebSocketReturn {
+  const { autoConnect = true, enableRandomDisconnect = false, randomDisconnectProbability = 0.05 } = options;
 
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
