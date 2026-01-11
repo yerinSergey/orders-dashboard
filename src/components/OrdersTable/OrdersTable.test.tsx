@@ -5,6 +5,7 @@ import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { lightTheme } from '@/theme/theme';
 import { OrdersTable } from './OrdersTable';
 import type { Order, OrderStatus, PageSize, SortableColumn } from '@/features/orders/types';
+import { range } from '@/utils/arrayHelpers';
 
 // Test wrapper with MUI theme
 function TestWrapper({ children }: { children: React.ReactNode }) {
@@ -36,7 +37,7 @@ function createMockOrder(overrides: Partial<Order> = {}): Order {
 // Generate multiple mock orders
 function createMockOrders(count: number): Order[] {
   const statuses: OrderStatus[] = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-  return Array.from({ length: count }, (_, i) => {
+  return range(count).map((i) => {
     const index = i + 1;
     return createMockOrder({
       id: `ORD-${String(index).padStart(5, '0')}`,

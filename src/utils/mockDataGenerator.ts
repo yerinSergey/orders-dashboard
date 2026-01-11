@@ -1,5 +1,6 @@
 import type { Order, OrderItem, Address, OrderStatus } from '@/features/orders/types';
 import { ORDER_STATUSES, MOCK_DATA_CONFIG } from '@/features/orders/constants';
+import { range } from './arrayHelpers';
 
 const FIRST_NAMES = [
   'John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Chris', 'Amanda',
@@ -88,7 +89,7 @@ function generateOrder(index: number): Order {
     MOCK_DATA_CONFIG.MIN_ITEMS_PER_ORDER,
     MOCK_DATA_CONFIG.MAX_ITEMS_PER_ORDER
   );
-  const items: OrderItem[] = Array.from({ length: itemCount }, (_, i) => generateOrderItem(i));
+  const items: OrderItem[] = range(itemCount).map((i) => generateOrderItem(i));
 
   const totalAmount = parseFloat(
     items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)
@@ -118,7 +119,7 @@ function generateOrder(index: number): Order {
 
 export function generateMockOrders(count?: number): Order[] {
   const orderCount = count ?? randomInt(MOCK_DATA_CONFIG.MIN_ORDERS, MOCK_DATA_CONFIG.MAX_ORDERS);
-  return Array.from({ length: orderCount }, (_, i) => generateOrder(i));
+  return range(orderCount).map((i) => generateOrder(i));
 }
 
 export function generateNewOrder(existingOrders: Order[]): Order {

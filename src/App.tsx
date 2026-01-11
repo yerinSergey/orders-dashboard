@@ -4,7 +4,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
@@ -17,6 +16,7 @@ import { OrdersTable } from '@/components/OrdersTable';
 import { OrderDetailsModal } from '@/components/OrderDetailsModal';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { TableSkeleton } from '@/components/ui';
 
 function App() {
   const { isDark, toggleMode } = useThemeContext();
@@ -95,17 +95,27 @@ function App() {
   // Loading state
   if (isLoading) {
     return (
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ py: 3 }}>
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            minHeight: '100vh',
+            mb: 3,
           }}
         >
-          <CircularProgress />
+          <Typography variant="h4" component="h1">
+            Orders Dashboard
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+              <IconButton onClick={toggleMode} aria-label="Toggle theme">
+                {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
+        <TableSkeleton rows={10} columns={5} />
       </Container>
     );
   }
