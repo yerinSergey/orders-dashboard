@@ -31,7 +31,7 @@ export type SortDirection = 'asc' | 'desc';
 
 export type SortableColumn = 'id' | 'customerName' | 'status' | 'totalAmount' | 'createdAt';
 
-export type PageSize = 10 | 25 | 50;
+export type PageSize = 10 | 25 | 50 | 'all';
 
 export interface TableState {
   page: number;

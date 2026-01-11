@@ -24,9 +24,20 @@ export const STATUS_COLORS: Record<OrderStatus, 'warning' | 'info' | 'primary' |
   cancelled: 'error',
 };
 
-export const PAGE_SIZES: PageSize[] = [10, 25, 50];
+export const PAGE_SIZES: PageSize[] = [10, 25, 50, 'all'];
+
+export const PAGE_SIZE_LABELS: Record<PageSize, string> = {
+  10: '10',
+  25: '25',
+  50: '50',
+  all: 'All',
+};
 
 export const DEFAULT_PAGE_SIZE: PageSize = 10;
+
+export const PAGE_SIZE_ALL = 'all' as const;
+
+export const VIRTUALIZATION_THRESHOLD = 100;
 
 export const SORTABLE_COLUMNS: SortableColumn[] = [
   'id',

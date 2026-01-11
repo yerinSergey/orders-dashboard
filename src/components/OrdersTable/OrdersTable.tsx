@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -11,11 +12,13 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import type { Order, SortableColumn, PageSize, OrderStatus } from '@/features/orders/types';
-import { COLUMN_LABELS, PAGE_SIZES, SORTABLE_COLUMNS } from '@/features/orders/constants';
+import { COLUMN_LABELS, PAGE_SIZES, PAGE_SIZE_LABELS, PAGE_SIZE_ALL, SORTABLE_COLUMNS, VIRTUALIZATION_THRESHOLD } from '@/features/orders/constants';
 import { SearchInput } from './SearchInput';
 import { StatusFilter } from './StatusFilter';
 import { OrderRow } from './OrderRow';
 import { EmptyState } from './EmptyState';
+
+const ROW_HEIGHT = 53; // MUI table row height
 
 interface OrdersTableProps {
   orders: Order[];
@@ -51,6 +54,20 @@ export function OrdersTable({
   onSearchChange,
   onOrderClick,
 }: OrdersTableProps) {
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Determine if virtualization should be used
+  const useVirtualization = pageSize === PAGE_SIZE_ALL && orders.length > VIRTUALIZATION_THRESHOLD;
+
+  // Virtualizer for large lists
+  const virtualizer = useVirtualizer({
+    count: orders.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 10,
+    enabled: useVirtualization,
+  });
+
   const handlePageChange = useCallback(
     (_event: unknown, newPage: number) => {
       onPageChange(newPage);
@@ -60,7 +77,9 @@ export function OrdersTable({
 
   const handleRowsPerPageChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newPageSize = parseInt(event.target.value, 10) as PageSize;
+      const value = parseInt(event.target.value, 10);
+      // MUI uses -1 for "show all"
+      const newPageSize: PageSize = value === -1 ? PAGE_SIZE_ALL : (value as PageSize);
       onPageSizeChange(newPageSize);
     },
     [onPageSizeChange]
@@ -72,6 +91,13 @@ export function OrdersTable({
     },
     [onSortChange]
   );
+
+  // Page size options with labels for TablePagination
+  // MUI TablePagination uses -1 for "show all"
+  const pageSizeOptions = PAGE_SIZES.map((size) => ({
+    value: size === PAGE_SIZE_ALL ? -1 : size,
+    label: PAGE_SIZE_LABELS[size],
+  }));
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -88,7 +114,10 @@ export function OrdersTable({
         </Stack>
       </Box>
 
-      <TableContainer sx={{ maxHeight: 'calc(100vh - 300px)' }}>
+      <TableContainer
+        ref={tableContainerRef}
+        sx={{ maxHeight: 'calc(100vh - 300px)' }}
+      >
         <Table stickyHeader aria-label="Orders table">
           <TableHead>
             <TableRow>
@@ -119,7 +148,26 @@ export function OrdersTable({
                   />
                 </TableCell>
               </TableRow>
+            ) : useVirtualization ? (
+              // Virtualized rows for large lists
+              <>
+                {/* Spacer for virtual scroll */}
+                <TableRow style={{ height: virtualizer.getVirtualItems()[0]?.start ?? 0 }} />
+                {virtualizer.getVirtualItems().map((virtualRow) => {
+                  const order = orders[virtualRow.index];
+                  return (
+                    <OrderRow key={order.id} order={order} onClick={onOrderClick} />
+                  );
+                })}
+                {/* Bottom spacer */}
+                <TableRow
+                  style={{
+                    height: virtualizer.getTotalSize() - (virtualizer.getVirtualItems().at(-1)?.end ?? 0)
+                  }}
+                />
+              </>
             ) : (
+              // Regular rows
               orders.map((order) => (
                 <OrderRow key={order.id} order={order} onClick={onOrderClick} />
               ))
@@ -131,13 +179,15 @@ export function OrdersTable({
       <TablePagination
         component="div"
         count={totalCount}
-        page={page}
+        page={pageSize === PAGE_SIZE_ALL ? 0 : page}
         onPageChange={handlePageChange}
-        rowsPerPage={pageSize}
+        rowsPerPage={pageSize === PAGE_SIZE_ALL ? -1 : pageSize}
         onRowsPerPageChange={handleRowsPerPageChange}
-        rowsPerPageOptions={PAGE_SIZES}
+        rowsPerPageOptions={pageSizeOptions}
         labelRowsPerPage="Rows per page:"
         aria-label="Table pagination"
+        // Hide pagination controls when showing all
+        sx={pageSize === PAGE_SIZE_ALL ? { '& .MuiTablePagination-actions': { display: 'none' } } : undefined}
       />
     </Paper>
   );

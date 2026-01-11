@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { Order, OrderStatus, TableState, SortableColumn, SortDirection, PageSize } from './types';
-import { DEFAULT_PAGE_SIZE } from './constants';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_ALL } from './constants';
 
 const initialState: TableState = {
   page: 0,
@@ -86,13 +86,17 @@ export function useOrdersTableState(orders: Order[]): UseOrdersTableStateReturn 
 
   // BONUS: useMemo for paginated data
   const paginatedOrders = useMemo(() => {
+    // If 'all' is selected, return all filtered orders
+    if (tableState.pageSize === PAGE_SIZE_ALL) {
+      return filteredOrders;
+    }
     const start = tableState.page * tableState.pageSize;
     const end = start + tableState.pageSize;
     return filteredOrders.slice(start, end);
   }, [filteredOrders, tableState.page, tableState.pageSize]);
 
   const totalCount = filteredOrders.length;
-  const totalPages = Math.ceil(totalCount / tableState.pageSize);
+  const totalPages = tableState.pageSize === PAGE_SIZE_ALL ? 1 : Math.ceil(totalCount / tableState.pageSize);
 
   // BONUS: useCallback for handlers
   const setPage = useCallback((page: number) => {
