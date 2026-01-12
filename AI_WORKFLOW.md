@@ -104,12 +104,22 @@ Describe 1-2 cases where AI generated incorrect or suboptimal code:
 - **How did you catch it?** I noticed several redundant performance optimizations in the code.
 - **How did you fix it?** Ask why this was done? Remove useless
 
+### Example 2:
+- **What was wrong?** Using `Array.from` in rendering process
+- **How did you catch it?** I noticed several `Array.from` usage 
+- **How did you fix it?** Replace them with regular cached arrays
+
+### Example 3:
+- **What was wrong?** Using "ternary hell"
+- **How did you catch it?** I noticed using deeply nested ternary operators
+- **How did you fix it?** Move logic to the separate component
+
 ## Time Breakdown
 
-- Total time spent: 6 hours
+- Total time spent: 7 hours
 - Time with AI assistance: 4 hours
-- Time reviewing/fixing AI output: 1.5 hours
-- Time writing code manually: 0.5 hours
+- Time reviewing/fixing AI output: 2 hours
+- Time writing code manually: 1 hours
 
 ## Reflection
 
