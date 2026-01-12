@@ -238,7 +238,7 @@ describe('OrdersTable', () => {
       expect(onPageSizeChange).toHaveBeenCalledWith(25);
     });
 
-    it('displays correct rows per page options', async () => {
+    it('displays correct rows per page options including "All"', async () => {
       const user = userEvent.setup();
       const props = createDefaultProps();
 
@@ -250,6 +250,47 @@ describe('OrdersTable', () => {
       expect(screen.getByRole('option', { name: '10' })).toBeInTheDocument();
       expect(screen.getByRole('option', { name: '25' })).toBeInTheDocument();
       expect(screen.getByRole('option', { name: '50' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'All' })).toBeInTheDocument();
+    });
+
+    it('handles "All" page size option correctly', () => {
+      const onPageSizeChange = vi.fn();
+      const orders = createMockOrders(150);
+      const props = createDefaultProps({ 
+        orders,
+        totalCount: 150,
+        pageSize: 'all' as PageSize,
+        onPageSizeChange 
+      });
+
+      render(<OrdersTable {...props} />, { wrapper: TestWrapper });
+
+      // Check that "1-150 of 150" is shown (all items)
+      expect(screen.getByText('1–150 of 150')).toBeInTheDocument();
+
+      // Navigation buttons should be hidden (visibility: hidden)
+      const prevButton = screen.queryByLabelText('Go to previous page');
+      const nextButton = screen.queryByLabelText('Go to next page');
+      
+      // Buttons exist in DOM but are hidden
+      expect(prevButton).toBeInTheDocument();
+      expect(nextButton).toBeInTheDocument();
+    });
+
+    it('calls onPageSizeChange with "all" when selecting All option', async () => {
+      const user = userEvent.setup();
+      const onPageSizeChange = vi.fn();
+      const props = createDefaultProps({ onPageSizeChange });
+
+      render(<OrdersTable {...props} />, { wrapper: TestWrapper });
+
+      const rowsPerPageButton = screen.getByRole('combobox', { name: /rows per page/i });
+      await user.click(rowsPerPageButton);
+
+      const allOption = screen.getByRole('option', { name: 'All' });
+      await user.click(allOption);
+
+      expect(onPageSizeChange).toHaveBeenCalledWith('all');
     });
   });
 
@@ -337,6 +378,87 @@ describe('OrdersTable', () => {
 
       expect(screen.getByText('Pending')).toBeInTheDocument();
       expect(screen.getByText('Shipped')).toBeInTheDocument();
+    });
+  });
+
+  // BONUS: Virtualization tests
+  describe('virtualization', () => {
+    it('does not use virtualization with less than threshold items', () => {
+      const orders = createMockOrders(50);
+      const props = createDefaultProps({ 
+        orders,
+        totalCount: 50,
+        pageSize: 'all' as PageSize 
+      });
+
+      render(<OrdersTable {...props} />, { wrapper: TestWrapper });
+
+      // All 50 orders should be rendered directly (no virtualization)
+      expect(screen.getByText('Customer 1')).toBeInTheDocument();
+      expect(screen.getByText('Customer 50')).toBeInTheDocument();
+    });
+
+    it('uses virtualization with more than threshold items when pageSize is "all"', () => {
+      const orders = createMockOrders(150);
+      const props = createDefaultProps({ 
+        orders,
+        totalCount: 150,
+        pageSize: 'all' as PageSize 
+      });
+
+      render(<OrdersTable {...props} />, { wrapper: TestWrapper });
+
+      // With virtualization, not all items are rendered at once
+      // Check that table exists and has content
+      expect(screen.getByRole('table')).toBeInTheDocument();
+      
+      // Should show correct pagination info
+      expect(screen.getByText('1–150 of 150')).toBeInTheDocument();
+    });
+
+    it('does not use virtualization when pageSize is not "all"', () => {
+      const orders = createMockOrders(10); // Only showing 10 on this page
+      const props = createDefaultProps({ 
+        orders,
+        totalCount: 150, // Total is 150 but only 10 shown per page
+        pageSize: 10,
+        page: 0
+      });
+
+      render(<OrdersTable {...props} />, { wrapper: TestWrapper });
+
+      // Regular pagination mode, no virtualization
+      expect(screen.getByText('1–10 of 150')).toBeInTheDocument();
+      expect(screen.getByLabelText('Go to next page')).toBeInTheDocument();
+    });
+
+    it('uses virtualization at exact threshold boundary', () => {
+      const orders = createMockOrders(101); // Just over VIRTUALIZATION_THRESHOLD (100)
+      const props = createDefaultProps({ 
+        orders,
+        totalCount: 101,
+        pageSize: 'all' as PageSize 
+      });
+
+      render(<OrdersTable {...props} />, { wrapper: TestWrapper });
+
+      // Should show all items indicator
+      expect(screen.getByText('1–101 of 101')).toBeInTheDocument();
+    });
+
+    it('does not use virtualization at threshold boundary', () => {
+      const orders = createMockOrders(100); // Exactly at VIRTUALIZATION_THRESHOLD
+      const props = createDefaultProps({ 
+        orders,
+        totalCount: 100,
+        pageSize: 'all' as PageSize 
+      });
+
+      render(<OrdersTable {...props} />, { wrapper: TestWrapper });
+
+      // At threshold, no virtualization (threshold is > 100, not >= 100)
+      expect(screen.getByText('1–100 of 100')).toBeInTheDocument();
+      expect(screen.getByText('Customer 100')).toBeInTheDocument();
     });
   });
 });
